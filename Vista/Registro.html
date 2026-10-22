@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Proyecto ADSO</title>
+    <link rel="stylesheet" href="../Assets/css/estilos.css">
+</head>
+
+<body>
+    <div class="Contenedorformulario">
+        <div>
+            <h2>Registro de asociado - Acerias</h2>
+            <form id="FormRegistro" action="" method="post">
+                <div class="grupo-input">
+                    <label>Ingresar Documento</label>
+                    <input id="Documento" type="number" placeholder="Ejemplo:1052841571">
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar Nombre</label>
+                    <input id="Nombres" type="text" required placeholder="Ingrese nombres completos">
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar Apellido</label>
+                    <input id="Apellidos" type="text" required placeholder="Ingrese apellidos completos">
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar Fecha de Nacimiento</label>
+                    <input id="fechaNacimiento" type="date" required placeholder="Ingrese Fecha de Nacimiento">
+                </div>
+                <div class="grupo-input">
+                    <label>Seleccione su Genero</label>
+                    <label>
+                        <input type="radio" id="Femenino" name="genero" value="Femenino" required>
+                        <span>Femenino</span>
+                    </label>
+                    <label>
+                        <input type="radio" id="Masculino" name="genero" value="Masculino" required>
+                        <span>Masculino</span>
+                    </label>
+                    <label>
+                        <input type="radio" id="Otro" name="genero" value="Otro" required>
+                        <span>Otro</span>
+                    </label>
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar Direccion de Residencia</label>
+                    <input id="direccionResidencia" type="text" required placeholder="Ejemplo:Calle 18#4-111">
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar ciudad</label>
+                    <select id="ciudad" required>
+                        <option value="Sogamoso">Sogamoso</option>
+                        <option value="Duitama">Duitama</option>
+                        <option value="Tunja">Tunja</option>
+                    </select>
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar telefono</label>
+                    <input id="telefono" type="tel" required placeholder="Ejemplo: 3102045293">
+                </div>
+                <div class="grupo-input">
+                    <label>Ingresar Correo Electronico</label>
+                    <input id="email" type="text" required placeholder="Ejemplo:mesaivy13@gmail.com">
+                </div>
+                <div class="grupo-botones">
+                    <button type="submit">Registrarme</button>
+                </div>
+                <div class="grupo-botones">
+                    <button type="reset">Borrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
