@@ -5,7 +5,7 @@
 }
 
 body {
-    background-color: rgb(138, 104, 170);
+    background-color: rgb(252, 252, 253);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -18,7 +18,7 @@ h2 {
     margin-bottom: 20px;
     font-size: 24px;
     text-align: center;
-    border-bottom: 2px solid rgb(240, 236, 236);
+    border-bottom: 2px solid rgb(241, 8, 8);
 }
 
 .grupo-input {
@@ -37,13 +37,17 @@ select {
     transition: border-color 0.25;
 }
 input:focus,select:focus{
-    border-color:rgb(54, 54, 212);
+    border-color:rgb(160, 9, 9);
     box-shadow: 0 0 0 3px black;
 }
 .grupo-botones {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+}
+.grupo-botones:hover{
+    transform: scale(1.05); 
+    filter: brightness(0.85);
 }
 
 button {
@@ -65,6 +69,6 @@ button {
     width: 100
 }
 button[type="submit"]{
-    background-color: rgb(140, 0, 255);
+    background-color: rgb(221, 17, 17);
     color: #ffffff;
 }
