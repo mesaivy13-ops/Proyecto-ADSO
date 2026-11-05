@@ -11,22 +11,22 @@
     <div class="Contenedorformulario">
         <div>
             <h2>Registro de asociado - Acerias</h2>
-            <form id="FormRegistro" action="" method="post">
+            <form id="FormRegistro" action="../Modelos/guardarAsociado.php" method="post">
                 <div class="grupo-input">
                     <label>Ingresar Documento</label>
-                    <input id="Documento" type="number" placeholder="Ejemplo:1052841571">
+                    <input id="Documento" name="documento" type="number" placeholder="Ejemplo:1052841571">
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar Nombre</label>
-                    <input id="Nombres" type="text" required placeholder="Ingrese nombres completos">
+                    <input id="Nombres" name="nombres" type="text" required placeholder="Ingrese nombres completos">
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar Apellido</label>
-                    <input id="Apellidos" type="text" required placeholder="Ingrese apellidos completos">
+                    <input id="Apellidos" name="apellidos" type="text" required placeholder="Ingrese apellidos completos">
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar Fecha de Nacimiento</label>
-                    <input id="fechaNacimiento" type="date" required placeholder="Ingrese Fecha de Nacimiento">
+                    <input id="fechaNacimiento" name="fechaNacimiento" type="date" required placeholder="Ingrese Fecha de Nacimiento">
                 </div>
                 <div class="grupo-input">
                     <label>Seleccione su Genero</label>
@@ -45,11 +45,11 @@
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar Direccion de Residencia</label>
-                    <input id="direccionResidencia" type="text" required placeholder="Ejemplo:Calle 18#4-111">
+                    <input id="direccionResidencia" name="direccionResidencia" type="text" required placeholder="Ejemplo:Calle 18#4-111">
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar ciudad</label>
-                    <select id="ciudad" required>
+                    <select id="ciudad" name="ciudad" required>
                         <option value="Sogamoso">Sogamoso</option>
                         <option value="Duitama">Duitama</option>
                         <option value="Tunja">Tunja</option>
@@ -57,11 +57,11 @@
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar telefono</label>
-                    <input id="telefono" type="tel" required placeholder="Ejemplo: 3102045293">
+                    <input id="telefono" name="telefono" type="tel" required placeholder="Ejemplo: 3102045293">
                 </div>
                 <div class="grupo-input">
                     <label>Ingresar Correo Electronico</label>
-                    <input id="email" type="text" required placeholder="Ejemplo:mesaivy13@gmail.com">
+                    <input id="email" name="email" type="text" required placeholder="Ejemplo:mesaivy13@gmail.com">
                 </div>
                 <div class="grupo-botones">
                     <button type="submit">Registrarme</button>
@@ -69,6 +69,9 @@
                 <div class="grupo-botones">
                     <button type="reset">Borrar</button>
                 </div>
+                <p id="mensajeRegistro" role="status" aria-live="polite">
+
+                </p>
             </form>
             <p style="text-align: center; margin-top: 15px; font-size: 14px;">
                 ¿Ya tienes una cuenta? <a href="Login.html">Inicia sesión aquí</a>
@@ -76,5 +79,4 @@
         </div>
     </div>
 </body>
-
 </html>
