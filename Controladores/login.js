@@ -6,7 +6,7 @@ const usuarios = [
 document.getElementById('formLogin').addEventListener('submit', function (e) {
     e.preventDefault();
     const usuarioinput = document.getElementById('email').value;
-    const contraseñainput = document.getElementById('password').value;
+    const contraseñainput = document.getElementById('contraseña').value;
 
     const usuarioEncontrado = usuarios.find(
         u => u.usuario === usuarioinput && u.clave === contraseñainput

@@ -9,6 +9,14 @@ formulario.addEventListener("submit", async function (event) {
     //los datos del formulario los convierte en objetos
     const asocido = Object.fromEntries(new FormData(formulario).entries())
 
+    if (asocido.contraseña !== asocido.confirmarContraseña) {
+        document.getElementById("mensajeRegistro").textContent =
+         "Las contraseñas no coinciden.";
+        return;
+    }
+
+    delete asocido.confirmarContraseña;
+    
     botonGuardar.disabled = true;//deshabilita el boton mientras se termina el proceso
 
     try {

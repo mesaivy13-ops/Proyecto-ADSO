@@ -20,7 +20,7 @@ try {
         $datos = $_POST;
     }
 
-    $campos=["documento","nombres","apellidos","fechaNacimiento","genero","direccionResidencia","ciudad","telefono","email"];
+    $campos=["documento","nombres","apellidos","fechaNacimiento","genero","direccionResidencia","ciudad","telefono","email","contraseña"];
     foreach($campos as $campo){ 
         if (!isset($datos[$campo])) {
             http_response_code(400);
