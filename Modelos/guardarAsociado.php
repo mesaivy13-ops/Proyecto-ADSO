@@ -9,14 +9,15 @@ try {
         //Saltar a cathch y mostrar el mensaje de error
         throw new Exception("Método HTTP no permitido");
     }
-    //Leer el conenido JSON de la solicitud
-    $json = file_get_contents('php://input');
-
-    $datos = json_decode($json, true);
-
-    if(!is_array($datos) || json_last_error() !== JSON_ERROR_NONE) {
-        http_response_code(400);
-        throw new Exception("Datos inválidos");
+    $tipoContenido = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (stripos($tipoContenido, 'application/json') !== false) {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($datos) || json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(400);
+            throw new Exception("Datos inválidos");
+        }
+    } else {
+        $datos = $_POST;
     }
 
     $campos=["documento","nombres","apellidos","fechaNacimiento","genero","direccionResidencia","ciudad","telefono","email"];
@@ -25,16 +26,14 @@ try {
             http_response_code(400);
             throw new Exception("Falta el campo: " . $campo);
         }
-        if(!filter_var($datos['email'], FILTER_VALIDATE_EMAIL)){
-            http_response_code(400);
-            throw new Exception("Email invalido");
-        }
+    }
+    if(!filter_var($datos['email'], FILTER_VALIDATE_EMAIL)){
+        http_response_code(400);
+        throw new Exception("Email invalido");
     }
 
     $asociado = new Asociado($datos);
-
     $asociado->guardar();
-
     $resultado = $asociado->guardar();
 
     if($resultado){

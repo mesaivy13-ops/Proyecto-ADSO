@@ -4,7 +4,7 @@ formulario.addEventListener("submit", async function (event) {
     //evita recargar la pagina al enviar el formulario
     event.preventDefault();
 
-    const botonGuardar = formulario.querySelector(button[type = "submit"]);
+    const botonGuardar = formulario.querySelector('button[type="submit"]');
 
     //los datos del formulario los convierte en objetos
     const asocido = Object.fromEntries(new FormData(formulario).entries())
@@ -16,8 +16,6 @@ formulario.addEventListener("submit", async function (event) {
 
         //pasar la respuesta JSNO a un objeto de javascript
         const resultado = await respuesta.json();
-        document.getElementById("mensajeRegistro").textContent = "Guardando...";
-
         document.getElementById("mensajeRegistro").dataset.tipo = '';//limpia cualquier mensaje anterior
 
         document.getElementById("mensajeRegistro").textContent = resultado.mensaje;
