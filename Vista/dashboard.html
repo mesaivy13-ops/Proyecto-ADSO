@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,7 @@
             font-size: 45px;
             color: rgb(255, 0, 0);
         }
+
         .icono-principalasociado {
             font-size: 45px;
             color: rgba(17, 0, 255, 0.76);
@@ -53,7 +54,8 @@
         <h3>CLUB ACERIAS - Panel principal</h3>
         <div class="text-end">
             <small id="nombreUsuario"></small>
-            <button class="btn btn-danger btn-sm" onclick="cerrarSecion()"><i class="bi bi-person-heart"></i>Cerrar sesión</button>
+            <button class="btn btn-danger btn-sm" onclick="cerrarSecion()"><i class="bi bi-person-heart"></i>Cerrar
+                sesión</button>
         </div>
     </div>
     <div class="container py-4">
@@ -82,15 +84,15 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card modulo-card shadow-sm p-3">
-                    <i class="bi bi-calendar-check-fill icono-principal"></i>
-                    <h4 class="text-danger">Actividades</h4>
-                    <strong>Gestión de actividades</strong>
-                    <p class="small text-muted mt-2">
-                        Administra los eventos anuales de recaudo, la lista de participantes y la distribución
-                        automática del recaudo.
-                    </p>
-                </div>
+                    <div class="card modulo-card shadow-sm p-3">
+                        <i class="bi bi-calendar-check-fill icono-principal"></i>
+                        <h4 class="text-danger">Actividades</h4>
+                        <strong>Gestión de actividades</strong>
+                        <p class="small text-muted mt-2">
+                            Administra los eventos anuales de recaudo, la lista de participantes y la distribución
+                            automática del recaudo.
+                        </p>
+                    </div>
             </div>
             <div class="col-md-3">
                 <div class="card modulo-card shadow-sm p-3">
@@ -116,11 +118,6 @@
                     <h4 class="text-primary">Mis Datos</h4>
                     <strong>Información Personal</strong>
                     <p class="small text-muted mt-2">
-
-
-
-
-                        
                         Consulta tus datos registrados en la plataforma: documento, nombres, apellidos, fecha de
                         nacimiento, dirección, teléfono y correo electrónico.
                     </p>
@@ -138,6 +135,7 @@
                 </div>
             </div>
             <div class="col-md-3">
+                <a href="actividades.html">
                 <div class="card modulo-card asociado shadow-sm p-3">
                     <i class="bi bi-calendar-check-fill icono-principalasociado"></i>
                     <h4 class="text-primary">Actividades</h4>
@@ -147,6 +145,7 @@
                         el 50% distribuido entre los asociados participantes.
                     </p>
                 </div>
+                </a>
             </div>
             <div class="col-md-3">
                 <div class="card modulo-card asociado shadow-sm p-3">
@@ -163,4 +162,5 @@
     </div>
 </body>
 <script src="../Controladores/dashboard.js"> </script>
+
 </html>
