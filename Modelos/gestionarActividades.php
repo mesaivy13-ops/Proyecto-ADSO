@@ -10,7 +10,33 @@ function leerDatos(){
     http_response_code(400);
     throw new Exception("Error al decodificar JSON: " . json_last_error_msg());
     }
-return $datos;
+    return $datos;
+}
+function validarActividad($datos){
+    $nombre = $datos['nombreActividad'] ?? null;
+    $fecha = $datos['fechaEvento']?? null;
+    $municipio = $datos['municipio']?? null;
+    if (!is_string($nombre) || trim($nombre) === "" || strlen($nombre) > 100 || !is_string($municipio) || trim($municipio) === "" || strlen($municipio) > 50) {
+        http_response_code(400);
+        throw new Exception(
+            "Ingrese nombre y municipio válidos"
+        );
+    }
+    return [
+        "nombreActividad"=>trim($nombre),
+        "fechaEvento"=>$fecha,
+        "municipio"=>trim($municipio)
+    ];
+} 
+
+function validarId($id){
+    $idActividad=filter_var($id,FILTER_VALIDATE_INT,["options" => ["min_range" => 1]]);
+    if ($idActividad === false) {
+        http_response_code(400);
+        throw new Exception("El identificadoe de la actividad no es válido");
+        
+    }
+    return $idActividad;
 }
 try {
     if (!isset($_SESSION["documento"], $_SESSION["rol"])) {
@@ -34,7 +60,7 @@ try {
 
     switch($metodo){
         case "GET":
-            $resultado_[
+            $resultado=[
                 "succes" => true,
                 "rol" => $_SESSION["rol"],
                 "actividades" => $actividad->obtenerActividades()
@@ -44,14 +70,43 @@ try {
         case "POST":
             $datos = validarActividad(leerDatos());
             $actividad->guardar($datos);
-            $resultad0 =[
+            $resultado =[
                 "success"=> true,
                 "message" => "Actividad creada exitosamente"
             ]
             http_response_code(201);
             break;
+        case "PUT":
+            $datos=leerDatos();
+            $datos["idActividad"]= validarId($datos["idActividad"]?? null);
+            $datos = array_merge($datos,validarActividad($datos));
+            if (!$actividad->editar($datos)) {
+                http_response_code(404);
+                throw new Exception("No se encontro la actividad");
+            }
+            $resultado =[
+                "success"=> true,
+                "message" => "Actividad actualizada exitosamente"
+            ];
+            http_response_code(200);
+            break;
+        case "DELETE":
+            $datos=leerDatos();
+            $datos["idActividad"]= validarId($datos["idActividad"]?? null);
+            if (!$actividad->eliminar($idActividad)) {
+                http_response_code(404);
+                throw new Exception("No se encontro la actividad");
+            }
+            $resultado =[
+                "success"=> true,
+                "message" => "Actividad elimindada exitosamente"
+            ];
+            http_response_code(200);
+            break;
+            
+            
     }
-    echo json_encode($resultad0);
+    echo json_encode($resultado);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
