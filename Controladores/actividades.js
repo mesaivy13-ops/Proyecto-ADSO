@@ -1,11 +1,15 @@
-const listaActividades = document.getElementById('listaActividades')
+const listaActividades = document.getElementById("listaActividades")
 let esAdministrador = false;
 let actividades = [];
+let accionesConfiguradas = false;
+const formularioActividad = document.getElementById("formActividad");
+const modalActividad = new bootstrap.Modal(document.getElementById("modalActividad"));
 
 async function solicitarApi(metodo, datos) {
     const opciones = {
         method: metodo,
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
     };
 
     if (datos) {
@@ -19,7 +23,7 @@ async function solicitarApi(metodo, datos) {
         window.location.href = "login.html";
     }
     if (!respuesta.ok || !resultado.success) {
-        throw new Error(resultado.mensaje || "Error en la solicitud");
+        throw new Error(resultado.message || "Error en la solicitud");
     }
 
     return resultado;
@@ -29,8 +33,8 @@ async function cargarActividades() {
         const resultado = await solicitarApi("GET");
 
         esAdministrador = resultado.rol === "admin";
-        
-        //configurarAcciones();
+
+        configurarAcciones();
 
         actividades = resultado.actividades;
         mostrarActividades();
@@ -73,7 +77,7 @@ function mostrarActividades() {
             botonEliminar.type = "button";
             botonEliminar.className = "btn btn-sm btn-outline-primary me-2";
             botonEliminar.innerHTML = '<i class="bi bi-trash-fill"></i>';
-            botonEditar.addEventListener("click", () => eliminarActividad(actividad));
+            botonEliminar.addEventListener("click", () => eliminarActividad(actividad));
 
             acciones.append(botonEditar, botonEliminar);
             fila.append(acciones);
@@ -87,5 +91,71 @@ function crearCelda(texto) {
     celda.textContent = texto;
     return celda;
 }
+async function eliminarActividad(actividad) {
+    const confirmar = window.confirm(`¿Desea eliminar la actividad "${actividad.nombreActividad}"?`);
 
+    if (!confirmar) {
+        return;
+    }
+
+    try {
+        await solicitarApi("DELETE", { idActividad: actividad.idActividad });
+        await cargarActividades();
+        alert("Actividad eliminada correctamente.");
+    } catch (error) {
+        alert(error.message);
+    }
+}
+function configurarAcciones() {
+    if (accionesConfiguradas) {
+        return;
+    }
+    const botonNueva = document.getElementById("nuevaActividad");
+    const encabezadoAcciones = document.getElementById("encabezadoAcciones");
+
+    if (esAdministrador) {
+        botonNueva.classList.remove("d-none");
+        encabezadoAcciones.classList.remove("d-none");
+        accionesConfiguradas = true;
+        return;
+    }
+}
+function abrirEdicion(actividad) {
+    formularioActividad.reset();
+    document.getElementById("idActividad").value = actividad.idActividad;
+    document.getElementById("nombreActividad").value = actividad.nombreActividad;
+    document.getElementById("fechaEvento").value = actividad.fechaEvento;
+    document.getElementById("municipio").value = actividad.municipio;
+    document.getElementById("totalRecaudado").value =
+        actividad.totalRecaudado ?? "";
+    document.getElementById("campoTotalRecaudado").classList.remove("d-none");
+    document.getElementById("tituloModalActividad").textContent =
+        "Editar actividad";
+    document.getElementById("guardarActividad").textContent = "Guardar cambios";
+    modalActividad.show();
+}
+formularioActividad.addEventListener("submit", async (evento)=>{
+    evento.preventDefault();
+    const idActividad=document.getElementById("idActividad").value;
+
+    const datos ={
+        nombreActividad: document.getElementById("nombreActividad").value.trim(),
+        fechaEvento: document.getElementById("fechaEvento").value,
+        municipio:document.getElementById("municipio").value.trim(),
+    }
+    if (idActividad) {
+        datos.idActividad = Number(idActividad);
+        const total = document.getElementById("totalRecaudado").value;
+        datos.totalRecaudado = total === "" ? null : Number(total);
+    }
+
+    try {
+        await solicitarApi(idActividad ? "PUT" : "POST",datos);
+        modalActividad.hide();
+        alert("actualizada correctamente")
+        cargarActividades();
+    } catch (error) {
+        alert(error.message)
+    }
+});
 cargarActividades();

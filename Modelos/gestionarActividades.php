@@ -61,7 +61,7 @@ try {
     switch($metodo){
         case "GET":
             $resultado=[
-                "succes" => true,
+                "success" => true,
                 "rol" => $_SESSION["rol"],
                 "actividades" => $actividad->obtenerActividades()
             ];
@@ -73,7 +73,7 @@ try {
             $resultado =[
                 "success"=> true,
                 "message" => "Actividad creada exitosamente"
-            ]
+            ];
             http_response_code(201);
             break;
         case "PUT":
@@ -93,7 +93,7 @@ try {
         case "DELETE":
             $datos=leerDatos();
             $datos["idActividad"]= validarId($datos["idActividad"]?? null);
-            if (!$actividad->eliminar($idActividad)) {
+            if (!$actividad->eliminar($datos["idActividad"])) {
                 http_response_code(404);
                 throw new Exception("No se encontro la actividad");
             }
