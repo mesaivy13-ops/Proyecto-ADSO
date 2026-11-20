@@ -79,6 +79,8 @@ function mostrarActividades() {
             botonEliminar.innerHTML = '<i class="bi bi-trash-fill"></i>';
             botonEliminar.addEventListener("click", () => eliminarActividad(actividad));
 
+            
+
             acciones.append(botonEditar, botonEliminar);
             fila.append(acciones);
 
@@ -115,10 +117,20 @@ function configurarAcciones() {
 
     if (esAdministrador) {
         botonNueva.classList.remove("d-none");
+        botonNueva.addEventListener("click", abrirNuevaActividad);//Le da funcionalidad al boton
         encabezadoAcciones.classList.remove("d-none");
         accionesConfiguradas = true;
         return;
     }
+}
+function abrirNuevaActividad() {
+    formularioActividad.reset();
+    document.getElementById("campoTotalRecaudado").classList.add("d-none");
+    document.getElementById("tituloModalActividad").textContent =
+        "Nueva actividad";
+    document.getElementById("guardarActividad").textContent =
+        "Guardar actividad";
+    modalActividad.show();
 }
 function abrirEdicion(actividad) {
     formularioActividad.reset();
