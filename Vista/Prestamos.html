@@ -33,7 +33,7 @@
             <div>
                 <button id="nuevoPrestamo" class="btn btn-success d-none" type="button">
                     <i class="bi bi-plus-lg"></i>
-                    Nuevo préstamo
+                    <span id="textoBotonPrestamo">Nuevo préstamo</span>
                 </button>
             </div>
         </div>
@@ -94,7 +94,7 @@
                         <input type="hidden" id="idPrestamo" name="idPrestamo" />
 
                         
-                        <div class="mb-3">
+                        <div id="campoAsociado" class="mb-3">
                             <label for="idAsociado" class="form-label">Asociado</label>
                             <select class="form-select" id="idAsociado" name="idAsociado" required>
                                 <option value="" selected disabled>Seleccione un asociado...</option>

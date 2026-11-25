@@ -75,7 +75,7 @@ async function cargarPrestamos() {
         if (!esAdministrador) {
             document.getElementById("tituloPrestamos").textContent = "Mis préstamos";
             document.getElementById("descripcionPrestamos").textContent =
-                "Consulta únicamente los préstamos asociados a tu cuenta.";
+                "Solicita un préstamo y consulta únicamente los préstamos asociados a tu cuenta.";
         }
 
         configurarAcciones();
@@ -175,21 +175,33 @@ function configurarAcciones() {
         botonNuevo?.classList.remove("d-none");
         botonNuevo?.addEventListener("click", abrirNuevoPrestamo);
         encabezadoAcciones?.classList.remove("d-none");
-        accionesConfiguradas = true;
+    } else {
+        botonNuevo?.classList.remove("d-none");
+        document.getElementById("textoBotonPrestamo").textContent = "Solicitar préstamo";
+        botonNuevo?.addEventListener("click", abrirNuevoPrestamo);
     }
+    accionesConfiguradas = true;
 }
 
 function abrirNuevoPrestamo() {
     formularioPrestamo.reset();
     document.getElementById("idPrestamo").value = "";
     document.getElementById("estado").value = "Pendiente";
-    document.getElementById("tituloModalPrestamo").textContent = "Nuevo préstamo";
-    document.getElementById("guardarPrestamo").textContent = "Guardar préstamo";
+    document.getElementById("campoAsociado").classList.toggle("d-none", !esAdministrador);
+    document.getElementById("idAsociado").required = esAdministrador;
+    document.getElementById("campoEstado").classList.toggle("d-none", !esAdministrador);
+    document.getElementById("tituloModalPrestamo").textContent =
+        esAdministrador ? "Nuevo préstamo" : "Solicitar préstamo";
+    document.getElementById("guardarPrestamo").textContent =
+        esAdministrador ? "Guardar préstamo" : "Enviar solicitud";
     modalPrestamo.show();
 }
 
 function abrirEdicion(prestamo) {
     formularioPrestamo.reset();
+    document.getElementById("campoAsociado").classList.remove("d-none");
+    document.getElementById("idAsociado").required = true;
+    document.getElementById("campoEstado").classList.remove("d-none");
     document.getElementById("idPrestamo").value = prestamo.idPrestamo;
     document.getElementById("idAsociado").value = prestamo.idAsociado;
     document.getElementById("valorPrestamo").value = prestamo.valorPrestamo;
@@ -207,13 +219,16 @@ formularioPrestamo.addEventListener("submit", async (evento) => {
     const idPrestamo = document.getElementById("idPrestamo").value;
 
     const datos = {
-        idAsociado: Number(document.getElementById("idAsociado").value),
         valorPrestamo: Number(document.getElementById("valorPrestamo").value),
         tasaInteres: Number(document.getElementById("tasaInteres").value),
         numeroCuotas: Number(document.getElementById("numeroCuotas").value),
-        fechaPrestamo: document.getElementById("fechaPrestamo").value,
-        estado: document.getElementById("estado").value
+        fechaPrestamo: document.getElementById("fechaPrestamo").value
     };
+
+    if (esAdministrador) {
+        datos.idAsociado = Number(document.getElementById("idAsociado").value);
+        datos.estado = document.getElementById("estado").value;
+    }
 
     if (idPrestamo) {
         datos.idPrestamo = Number(idPrestamo);
@@ -222,8 +237,12 @@ formularioPrestamo.addEventListener("submit", async (evento) => {
     try {
         await solicitarApi(idPrestamo ? "PUT" : "POST", datos);
         modalPrestamo.hide();
-        alert(idPrestamo ? "Préstamo actualizado correctamente." : "Préstamo guardado correctamente.");
-        cargarPrestamos();
+        alert(idPrestamo
+            ? "Préstamo actualizado correctamente."
+            : esAdministrador
+                ? "Préstamo guardado correctamente."
+                : "Solicitud enviada correctamente. Su estado es Pendiente.");
+        await cargarPrestamos();
     } catch (error) {
         alert(error.message);
     }

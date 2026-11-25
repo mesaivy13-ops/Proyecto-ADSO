@@ -89,7 +89,7 @@ try {
         throw new Exception("Método HTTP no permitido");
     }
 
-    if ($metodo !== "GET" && $_SESSION["rol"] !== "admin") {
+    if ($metodo !== "GET" && $_SESSION["rol"] !== "admin" && $metodo !== "POST") {
         http_response_code(403);
         throw new Exception("No tienes permisos para realizar esta acción");
     }
@@ -122,11 +122,23 @@ try {
             break;
 
         case "POST":
-            $datos = validarPrestamo(leerDatos());
+            $datosRecibidos = leerDatos();
+            if ($_SESSION["rol"] !== "admin") {
+                $asociados = $prestamosModelo->obtenerAsociadoPorDocumento($_SESSION["documento"]);
+                if (!$asociados) {
+                    http_response_code(404);
+                    throw new Exception("No se encontró el asociado de la sesión");
+                }
+                $datosRecibidos["idAsociado"] = $asociados[0]["idAsociado"];
+                $datosRecibidos["estado"] = "Pendiente";
+            }
+            $datos = validarPrestamo($datosRecibidos);
             $prestamosModelo->guardar($datos);
             $resultado = [
                 "success" => true,
-                "message" => "Préstamo creado exitosamente"
+                "message" => $_SESSION["rol"] === "admin"
+                    ? "Préstamo creado exitosamente"
+                    : "Solicitud de préstamo creada con estado Pendiente"
             ];
             http_response_code(201);
             break;
