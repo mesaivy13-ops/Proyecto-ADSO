@@ -22,6 +22,20 @@ class Prestamos
         return $consulta->fetchAll();
     }
 
+    public function obtenerPrestamosPorDocumento($documento)
+    {
+        $sql = "SELECT p.idPrestamo, p.valorPrestamo, p.tasaInteres, p.numeroCuotas,
+                       p.fechaPrestamo, p.idAsociado, p.estado,
+                       CONCAT(a.nombres, ' ', a.apellidos) AS nombreAsociado
+                FROM prestamos p
+                INNER JOIN asociados a ON a.idAsociado = p.idAsociado
+                WHERE a.documento = :documento
+                ORDER BY p.fechaPrestamo DESC, p.idPrestamo DESC";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute([":documento" => $documento]);
+        return $consulta->fetchAll();
+    }
+
     public function obtenerAsociados()
     {
         $sql = "SELECT idAsociado, nombres, apellidos
@@ -30,6 +44,17 @@ class Prestamos
         $consulta = $this->conexion->prepare($sql);
         $consulta->execute();
         return $consulta->fetchAll();
+    }
+
+    public function obtenerAsociadoPorDocumento($documento)
+    {
+        $sql = "SELECT idAsociado, nombres, apellidos
+                FROM asociados
+                WHERE documento = :documento";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute([":documento" => $documento]);
+        $asociado = $consulta->fetch();
+        return $asociado ? [$asociado] : [];
     }
 
     public function guardar($datos)

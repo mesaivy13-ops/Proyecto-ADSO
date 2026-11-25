@@ -65,7 +65,9 @@ try {
         echo json_encode([
             "success" => true,
             "rol" => $_SESSION["rol"],
-            "asociados" => $asociado->obtenerAsociados()
+            "asociados" => $_SESSION["rol"] === "admin"
+                ? $asociado->obtenerAsociados()
+                : $asociado->obtenerPorDocumento($_SESSION["documento"])
         ]);
         exit;
     }

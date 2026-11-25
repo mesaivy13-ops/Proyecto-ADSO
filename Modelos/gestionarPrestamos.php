@@ -103,7 +103,9 @@ try {
                 $resultado = [
                     "success"   => true,
                     "rol"       => $_SESSION["rol"],
-                    "asociados" => $prestamosModelo->obtenerAsociados()
+                    "asociados" => $_SESSION["rol"] === "admin"
+                        ? $prestamosModelo->obtenerAsociados()
+                        : $prestamosModelo->obtenerAsociadoPorDocumento($_SESSION["documento"])
                 ];
                 http_response_code(200);
                 break;
@@ -112,7 +114,9 @@ try {
             $resultado = [
                 "success"   => true,
                 "rol"       => $_SESSION["rol"],
-                "prestamos" => $prestamosModelo->obtenerPrestamos()
+                "prestamos" => $_SESSION["rol"] === "admin"
+                    ? $prestamosModelo->obtenerPrestamos()
+                    : $prestamosModelo->obtenerPrestamosPorDocumento($_SESSION["documento"])
             ];
             http_response_code(200);
             break;

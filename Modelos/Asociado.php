@@ -57,6 +57,16 @@ class Asociado{
         $consulta->execute();
         return $consulta->fetchAll();
     }
+    public function obtenerPorDocumento($documento){
+        $sql = "SELECT idAsociado, documento, nombres, apellidos, fechaNacimiento, genero,
+                       direccionResidencia, ciudad, telefono, email, rol
+                FROM asociados
+                WHERE documento = :documento";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute([":documento" => $documento]);
+        $asociado = $consulta->fetch();
+        return $asociado ? [$asociado] : [];
+    }
     public function eliminar($idAsociado){
         $sql = "DELETE FROM asociados WHERE idAsociado = :idAsociado";
         $consulta = $this->conexion->prepare($sql);

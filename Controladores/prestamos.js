@@ -72,6 +72,12 @@ async function cargarPrestamos() {
 
         esAdministrador = resultado.rol === "admin";
 
+        if (!esAdministrador) {
+            document.getElementById("tituloPrestamos").textContent = "Mis préstamos";
+            document.getElementById("descripcionPrestamos").textContent =
+                "Consulta únicamente los préstamos asociados a tu cuenta.";
+        }
+
         configurarAcciones();
 
         prestamos = resultado.prestamos || resultado.data || [];
