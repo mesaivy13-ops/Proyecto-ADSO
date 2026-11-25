@@ -75,8 +75,8 @@ function mostrarActividades() {
 
             const botonEliminar = document.createElement("button");
             botonEliminar.type = "button";
-            botonEliminar.className = "btn btn-sm btn-outline-primary me-2";
-            botonEliminar.innerHTML = '<i class="bi bi-trash-fill"></i>';
+            botonEliminar.className = "btn btn-sm btn-outline-danger";
+            botonEliminar.innerHTML = '<i class="bi bi-trash"></i>';
             botonEliminar.addEventListener("click", () => eliminarActividad(actividad));
 
             

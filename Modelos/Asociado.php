@@ -48,5 +48,64 @@ class Asociado{
         ":contrasena" => $this->contraseña
     ]);
 }
+    public function obtenerAsociados(){
+        $sql = "SELECT idAsociado, documento, nombres, apellidos, fechaNacimiento, genero,
+                       direccionResidencia, ciudad, telefono, email, rol
+                FROM asociados
+                ORDER BY nombres ASC";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute();
+        return $consulta->fetchAll();
+    }
+    public function eliminar($idAsociado){
+        $sql = "DELETE FROM asociados WHERE idAsociado = :idAsociado";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute([':idAsociado' => $idAsociado]);
+        return $consulta->rowCount() > 0;
+    }
+    public function editar($datos){
+        $sql = "UPDATE asociados
+                SET documento = :documentoNuevo,
+                    nombres = :nombres,
+                    apellidos = :apellidos,
+                    fechaNacimiento = :fechaNacimiento,
+                    genero = :genero,
+                    direccionResidencia = :direccionResidencia,
+                    ciudad = :ciudad,
+                    telefono = :telefono,
+                    email = :email,
+                    rol = :rol
+                WHERE documento = :documentoAnterior";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute([
+            ":documentoNuevo" => $datos['documento'],
+            ":nombres" => $datos['nombres'],
+            ":apellidos" => $datos['apellidos'],
+            ":fechaNacimiento" => $datos['fechaNacimiento'],
+            ":genero" => $datos['genero'],
+            ":direccionResidencia" => $datos['direccionResidencia'],
+            ":ciudad" => $datos['ciudad'],
+            ":telefono" => $datos['telefono'],
+            ":email" => $datos['email'],
+            ":rol" => $datos['rol'],
+            ":documentoAnterior" => $datos['documentoAnterior']
+        ]);
+
+        if ($consulta->rowCount() > 0) {
+            return true;
+        }
+
+        $verificar = $this->conexion->prepare(
+            "SELECT 1 FROM asociados
+             WHERE documento = :documentoAnterior
+                OR documento = :documentoNuevo
+             LIMIT 1"
+        );
+        $verificar->execute([
+            ':documentoAnterior' => $datos['documentoAnterior'],
+            ':documentoNuevo' => $datos['documento']
+        ]);
+        return (bool)$verificar->fetchColumn();
+    }
 }
 ?>
