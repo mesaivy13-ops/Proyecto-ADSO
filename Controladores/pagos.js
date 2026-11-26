@@ -5,6 +5,7 @@ const formPago = document.getElementById("formPago");
 const valorCuotaInput = document.getElementById("valorCuota");
 const fechaPagoInput = document.getElementById("fechaPago");
 const tablaPrestamos = document.getElementById("tablaPrestamos");
+const tablaPagos = document.getElementById("tablaPagos");
 const panelFormularioPago = document.getElementById("panelFormularioPago");
 
 const resMonto = document.getElementById("resMonto");
@@ -12,6 +13,7 @@ const resPagado = document.getElementById("resPagado");
 const resSaldo = document.getElementById("resSaldo");
 
 let prestamosData = [];
+let pagosData = [];
 
 function formatoMoneda(valor) {
   return new Intl.NumberFormat("es-CO", {
@@ -106,6 +108,37 @@ function renderTablaPrestamos() {
   });
 }
 
+function renderTablaPagos() {
+  tablaPagos.replaceChildren();
+
+  if (pagosData.length === 0) {
+    const fila = document.createElement("tr");
+    const celda = document.createElement("td");
+    celda.colSpan = 5;
+    celda.className = "text-center text-muted py-3";
+    celda.textContent = "No hay pagos registrados.";
+    fila.append(celda);
+    tablaPagos.append(fila);
+    return;
+  }
+
+  pagosData.forEach((pago) => {
+    const fila = document.createElement("tr");
+    [
+      `#${pago.idPago}`,
+      `#${pago.idPrestamo}`,
+      pago.nombreAsociado,
+      formatoMoneda(pago.valorCuota),
+      pago.fechaPago
+    ].forEach((valor) => {
+      const celda = document.createElement("td");
+      celda.textContent = valor ?? "";
+      fila.append(celda);
+    });
+    tablaPagos.append(fila);
+  });
+}
+
 async function cargarDatosPagos() {
   try {
     const res = await fetch(URL_PAGOS);
@@ -120,6 +153,7 @@ async function cargarDatosPagos() {
     }
 
     prestamosData = data.prestamos || [];
+    pagosData = data.pagos || [];
 
     const esAdmin = data.rol === "admin";
     panelFormularioPago.classList.toggle("d-none", esAdmin);
@@ -129,6 +163,7 @@ async function cargarDatosPagos() {
       esAdmin ? "Préstamos y saldos de asociados" : "Mis préstamos y saldos";
 
     renderTablaPrestamos();
+    renderTablaPagos();
     renderPrestamos();
   } catch (error) {
     const fila = document.createElement("tr");
