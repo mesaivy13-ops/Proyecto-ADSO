@@ -33,11 +33,26 @@ function validarId($id){
     $idActividad=filter_var($id,FILTER_VALIDATE_INT,["options" => ["min_range" => 1]]);
     if ($idActividad === false) {
         http_response_code(400);
-        throw new Exception("El identificadoe de la actividad no es válido");
+        throw new Exception("El identificador de la actividad no es válido");
         
     }
     return $idActividad;
 }
+
+function validarTotalRecaudado($total)
+{
+    if ($total === null || $total === "") {
+        return null;
+    }
+
+    if (!is_numeric($total) || !is_finite((float)$total) || (float)$total < 0) {
+        http_response_code(400);
+        throw new Exception("Ingrese un total recaudado válido");
+    }
+
+    return number_format((float)$total, 2, ".", "");
+}
+
 try {
     if (!isset($_SESSION["documento"], $_SESSION["rol"])) {
         http_response_code(401);
@@ -45,12 +60,14 @@ try {
     }
 
     $metodo = $_SERVER["REQUEST_METHOD"];
+    $accionParticipacion = ($_GET["action"] ?? "") === "participar";
 
     if (!in_array($metodo, ["GET", "POST", "PUT", "DELETE"], true)) {
         http_response_code(405);
         throw new Exception("Método HTTP no permitido");
     }
-    if ($metodo !== "GET" && $_SESSION["rol"] !== "admin") {
+    if ($metodo !== "GET" && $_SESSION["rol"] !== "admin" &&
+        !($accionParticipacion && in_array($metodo, ["POST", "DELETE"], true))) {
         http_response_code(403);
         throw new Exception("No tienes permisos para realizar esta acción");
     }
@@ -63,11 +80,26 @@ try {
             $resultado=[
                 "success" => true,
                 "rol" => $_SESSION["rol"],
-                "actividades" => $actividad->obtenerActividades()
+                "actividades" => $actividad->obtenerActividades($_SESSION["documento"])
             ];
             http_response_code(200);
             break;
         case "POST":
+            if ($accionParticipacion) {
+                $datos = leerDatos();
+                $idActividad = validarId($datos["idActividad"] ?? null);
+                if (!$actividad->cambiarParticipacion($idActividad, $_SESSION["documento"], true)) {
+                    http_response_code(404);
+                    throw new Exception("No se encontró la actividad");
+                }
+                $resultado = [
+                    "success" => true,
+                    "message" => "Participación registrada correctamente"
+                ];
+                http_response_code(200);
+                break;
+            }
+
             $datos = validarActividad(leerDatos());
             $actividad->guardar($datos);
             $resultado =[
@@ -80,6 +112,7 @@ try {
             $datos=leerDatos();
             $datos["idActividad"]= validarId($datos["idActividad"]?? null);
             $datos = array_merge($datos,validarActividad($datos));
+            $datos["totalRecaudado"] = validarTotalRecaudado($datos["totalRecaudado"] ?? null);
             if (!$actividad->editar($datos)) {
                 http_response_code(404);
                 throw new Exception("No se encontro la actividad");
@@ -93,6 +126,19 @@ try {
         case "DELETE":
             $datos=leerDatos();
             $datos["idActividad"]= validarId($datos["idActividad"]?? null);
+            if ($accionParticipacion) {
+                if (!$actividad->cambiarParticipacion($datos["idActividad"], $_SESSION["documento"], false)) {
+                    http_response_code(404);
+                    throw new Exception("No se encontró la actividad");
+                }
+                $resultado = [
+                    "success" => true,
+                    "message" => "Participación cancelada correctamente"
+                ];
+                http_response_code(200);
+                break;
+            }
+
             if (!$actividad->eliminar($datos["idActividad"])) {
                 http_response_code(404);
                 throw new Exception("No se encontro la actividad");
@@ -107,6 +153,12 @@ try {
             
     }
     echo json_encode($resultado);
+} catch (DomainException $e) {
+    http_response_code(409);
+    echo json_encode([
+        "success" => false,
+        "message" => $e->getMessage()
+    ]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([

@@ -5,18 +5,20 @@ let accionesConfiguradas = false;
 const formularioActividad = document.getElementById("formActividad");
 const modalActividad = new bootstrap.Modal(document.getElementById("modalActividad"));
 
-async function solicitarApi(metodo, datos) {
+async function solicitarApi(metodo, datos, accion = null) {
     const opciones = {
         method: metodo,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
+        headers: { "Content-Type": "application/json" }
     };
 
     if (datos) {
         opciones.body = JSON.stringify(datos);
     }
 
-    const respuesta = await fetch("../Modelos/gestionarActividades.php", opciones);
+    const endpoint = accion
+        ? `../Modelos/gestionarActividades.php?action=${encodeURIComponent(accion)}`
+        : "../Modelos/gestionarActividades.php";
+    const respuesta = await fetch(endpoint, opciones);
     const resultado = await respuesta.json();
 
     if (respuesta.status === 401) {
@@ -48,7 +50,7 @@ function mostrarActividades() {
     if (actividades.length === 0) {
         const fila = document.createElement("tr");
         const celda = document.createElement("td")
-        celda.colSpan = esAdministrador ? 5 : 4;
+        celda.colSpan = 9;
         celda.className = "text-center py-4 text-muted";
         celda.textContent = "No hay actividades disponibles.";
         fila.append(celda);
@@ -61,7 +63,11 @@ function mostrarActividades() {
             crearCelda(actividad.nombreActividad),
             crearCelda(actividad.fechaEvento),
             crearCelda(actividad.municipio),
-            crearCelda(actividad.totalRecaudado === null ? "Pendiente" : Number(actividad.totalRecaudado).toLocaleString("es-CO", { style: "currency", currency: "COP" })),
+            crearCelda(actividad.totalRecaudado === null ? "Pendiente" : formatearPesos(actividad.totalRecaudado)),
+            crearCelda(actividad.fondoClub === null ? "Se define al cierre" : formatearPesos(actividad.fondoClub)),
+            crearCelda(actividad.fondoParticipantes === null ? "Se define al cierre" : formatearPesos(actividad.fondoParticipantes)),
+            crearCelda(actividad.cantidadParticipantes),
+            crearCelda(obtenerValorParticipante(actividad)),
         );
         if (esAdministrador) {
             const acciones = document.createElement("td");
@@ -83,16 +89,73 @@ function mostrarActividades() {
 
             acciones.append(botonEditar, botonEliminar);
             fila.append(acciones);
-
+        } else {
+            const participacion = document.createElement("td");
+            const botonParticipacion = document.createElement("button");
+            botonParticipacion.type = "button";
+            botonParticipacion.className = actividad.participa
+                ? "btn btn-sm btn-outline-secondary"
+                : "btn btn-sm btn-outline-success";
+            botonParticipacion.textContent = actividad.participa
+                ? "Retirar inscripción"
+                : "Inscribirme";
+            botonParticipacion.disabled = actividad.totalRecaudado !== null;
+            botonParticipacion.addEventListener("click", () => cambiarParticipacion(actividad));
+            participacion.append(botonParticipacion);
+            fila.append(participacion);
         }
         listaActividades.append(fila);
     });
 }
+
+function formatearPesos(valor) {
+    return Number(valor).toLocaleString("es-CO", {
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function obtenerValorParticipante(actividad) {
+    if (actividad.totalRecaudado === null) {
+        return "Se calcula al cierre";
+    }
+    if (Number(actividad.cantidadParticipantes) === 0) {
+        return "Sin participantes";
+    }
+    if (esAdministrador) {
+        const minimo = actividad.valorParticipanteMin;
+        const maximo = actividad.valorParticipanteMax;
+        return minimo === maximo
+            ? formatearPesos(minimo)
+            : `${formatearPesos(minimo)}–${formatearPesos(maximo)}`;
+    }
+    if (!actividad.participa) {
+        return "—";
+    }
+    return formatearPesos(actividad.valorParticipante);
+}
+
 function crearCelda(texto) {
     const celda = document.createElement("td");
     celda.textContent = texto;
     return celda;
 }
+
+async function cambiarParticipacion(actividad) {
+    try {
+        await solicitarApi(
+            actividad.participa ? "DELETE" : "POST",
+            { idActividad: actividad.idActividad },
+            "participar"
+        );
+        await cargarActividades();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
 async function eliminarActividad(actividad) {
     const confirmar = window.confirm(`¿Desea eliminar la actividad "${actividad.nombreActividad}"?`);
 
@@ -119,9 +182,13 @@ function configurarAcciones() {
         botonNueva.classList.remove("d-none");
         botonNueva.addEventListener("click", abrirNuevaActividad);//Le da funcionalidad al boton
         encabezadoAcciones.classList.remove("d-none");
+        encabezadoAcciones.textContent = "Acciones";
         accionesConfiguradas = true;
         return;
     }
+    encabezadoAcciones.classList.remove("d-none");
+    encabezadoAcciones.textContent = "Participación";
+    accionesConfiguradas = true;
 }
 function abrirNuevaActividad() {
     formularioActividad.reset();
@@ -162,10 +229,10 @@ formularioActividad.addEventListener("submit", async (evento)=>{
     }
 
     try {
-        await solicitarApi(idActividad ? "PUT" : "POST",datos);
+        const resultado = await solicitarApi(idActividad ? "PUT" : "POST",datos);
         modalActividad.hide();
-        alert("actualizada correctamente")
-        cargarActividades();
+        alert(resultado.message);
+        await cargarActividades();
     } catch (error) {
         alert(error.message)
     }
