@@ -25,6 +25,7 @@ try {
     }
 
     require_once __DIR__ . "/../Confi/conexion.php";
+    require_once __DIR__ . "/prestamos.php";
     $conexionDB = new Conexion();
     $conexion = $conexionDB->conectar();
 
@@ -36,12 +37,14 @@ try {
             SELECT
                 p.idPrestamo,
                 p.valorPrestamo AS montoPrestamo,
+                p.tasaInteres,
                 p.numeroCuotas,
                 p.fechaPrestamo,
                 p.estado,
                 a.documento,
                 CONCAT(a.nombres, ' ', a.apellidos) AS nombreAsociado,
-                COALESCE(SUM(pg.valorCuota), 0) AS totalPagado
+                COALESCE(SUM(pg.valorCuota), 0) AS totalPagado,
+                COUNT(pg.idPago) AS cuotasPagadas
             FROM prestamos p
             INNER JOIN asociados a ON a.idAsociado = p.idAsociado
             LEFT JOIN pagos_cuotas pg ON pg.idPrestamo = p.idPrestamo
@@ -54,7 +57,7 @@ try {
         }
 
         $sqlPrestamos .= "
-            GROUP BY p.idPrestamo, p.valorPrestamo, p.numeroCuotas, p.fechaPrestamo,
+            GROUP BY p.idPrestamo, p.valorPrestamo, p.tasaInteres, p.numeroCuotas, p.fechaPrestamo,
                      p.estado, a.documento, a.nombres, a.apellidos
             ORDER BY p.idPrestamo DESC
         ";
@@ -66,7 +69,22 @@ try {
         foreach ($prestamos as &$pr) {
             $pr["montoPrestamo"] = (float)$pr["montoPrestamo"];
             $pr["totalPagado"] = (float)$pr["totalPagado"];
-            $pr["saldoPendiente"] = max(0, round($pr["montoPrestamo"] - $pr["totalPagado"], 2));
+            $pr["cuotasPagadas"] = (int)$pr["cuotasPagadas"];
+            $pr["tasaInteres"] = (float)$pr["tasaInteres"];
+            $pr["saldoPendiente"] = Prestamos::calcularSaldoPendiente(
+                $pr["montoPrestamo"],
+                $pr["tasaInteres"],
+                (int)$pr["numeroCuotas"],
+                $pr["cuotasPagadas"]
+            );
+            $pr["valorCuotaEsperada"] = $pr["cuotasPagadas"] < (int)$pr["numeroCuotas"]
+                ? Prestamos::calcularCuota(
+                    $pr["montoPrestamo"],
+                    $pr["tasaInteres"],
+                    (int)$pr["numeroCuotas"],
+                    $pr["cuotasPagadas"] + 1
+                )
+                : 0;
         }
         unset($pr);
 
@@ -132,7 +150,7 @@ try {
 
         $sqlCheck = "
             SELECT p.idPrestamo, p.valorPrestamo AS montoPrestamo,
-                   p.estado, a.documento
+                   p.tasaInteres, p.numeroCuotas, p.estado, a.documento
             FROM prestamos p
             INNER JOIN asociados a ON a.idAsociado = p.idAsociado
             WHERE p.idPrestamo = :idPrestamo
@@ -160,21 +178,29 @@ try {
             throw new Exception("Solo puedes pagar préstamos aprobados");
         }
 
-        $stmtTotal = $conexion->prepare(
-            "SELECT COALESCE(SUM(valorCuota), 0) FROM pagos_cuotas WHERE idPrestamo = :idPrestamo"
+        $stmtCuotas = $conexion->prepare(
+            "SELECT COUNT(*) FROM pagos_cuotas WHERE idPrestamo = :idPrestamo"
         );
-        $stmtTotal->execute([":idPrestamo" => $idPrestamo]);
-        $totalPagado = (float)$stmtTotal->fetchColumn();
-        $saldoPendiente = round((float)$prestamo["montoPrestamo"] - $totalPagado, 2);
-        if ($saldoPendiente <= 0) {
+        $stmtCuotas->execute([":idPrestamo" => $idPrestamo]);
+        $cuotasPagadas = (int)$stmtCuotas->fetchColumn();
+        $numeroCuotas = (int)$prestamo["numeroCuotas"];
+        if ($cuotasPagadas >= $numeroCuotas) {
             $conexion->rollBack();
             http_response_code(409);
-            throw new Exception("Este préstamo ya está pagado");
+            throw new Exception("Este préstamo ya tiene todas sus cuotas pagadas");
         }
-        if (round($valorCuota, 2) > $saldoPendiente) {
+        $cuotaEsperada = Prestamos::calcularCuota(
+            $prestamo["montoPrestamo"],
+            $prestamo["tasaInteres"],
+            $numeroCuotas,
+            $cuotasPagadas + 1
+        );
+        if (abs(round($valorCuota, 2) - $cuotaEsperada) > 0.001) {
             $conexion->rollBack();
             http_response_code(400);
-            throw new Exception("El valor supera el saldo pendiente ($" . number_format($saldoPendiente, 2) . ")");
+            throw new Exception(
+                "El valor de la cuota debe ser $" . number_format($cuotaEsperada, 2, ",", ".")
+            );
         }
 
         $stmtIns = $conexion->prepare("
@@ -182,10 +208,17 @@ try {
             VALUES (:valorCuota, :fechaPago, :idPrestamo)
         ");
         $stmtIns->execute([
-            ":valorCuota" => round($valorCuota, 2),
+            ":valorCuota" => $cuotaEsperada,
             ":fechaPago" => $fechaPago,
             ":idPrestamo" => $idPrestamo
         ]);
+
+        if ($cuotasPagadas + 1 === $numeroCuotas) {
+            $stmtEstado = $conexion->prepare(
+                "UPDATE prestamos SET estado = 'Pagado' WHERE idPrestamo = :idPrestamo"
+            );
+            $stmtEstado->execute([":idPrestamo" => $idPrestamo]);
+        }
 
         $conexion->commit();
 

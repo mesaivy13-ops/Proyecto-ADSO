@@ -101,16 +101,16 @@
                             </select>
                         </div>
 
-                        <!-- valorPrestamo (DECIMAL 12,2) -->
                         <div class="mb-3">
                             <label for="valorPrestamo" class="form-label">Valor del préstamo</label>
                             <input type="number" class="form-control" id="valorPrestamo" name="valorPrestamo"
-                                min="0" max="9999999999.99" step="0.01" placeholder="Ej.: 1500000.00" required />
+                                min="0.01" max="80000000" step="0.01" placeholder="Ej.: 1500000.00" required />
+                            <div class="form-text">Máximo 3 préstamos activos por asociado y $80.000.000 de saldo conjunto, incluidos los intereses.</div>
                         </div>
 
                         <!-- tasaInteres (DECIMAL 5,2) -->
                         <div class="mb-3">
-                            <label for="tasaInteres" class="form-label">Tasa de interés (%)</label>
+                            <label for="tasaInteres" class="form-label">Tasa de interés mensual (%)</label>
                             <input type="number" class="form-control" id="tasaInteres" name="tasaInteres"
                                 min="0" max="999.99" step="0.01" placeholder="Ej.: 1.50" required />
                         </div>
@@ -150,7 +150,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Controladores/prestamos.js?v=2026112502"></script>
+    <script src="../Controladores/prestamos.js?v=2026112601"></script>
 </body>
 
 </html>

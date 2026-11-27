@@ -28,9 +28,9 @@ function validarPrestamo($datos)
         throw new Exception("Seleccione un asociado válido");
     }
 
-    if ($valorPrestamo === false || $valorPrestamo <= 0 || $valorPrestamo > 9999999999.99) {
+    if ($valorPrestamo === false || $valorPrestamo <= 0 || $valorPrestamo > 80000000) {
         http_response_code(400);
-        throw new Exception("Ingrese un valor de préstamo válido");
+        throw new Exception("El valor del préstamo debe ser mayor a 0 y no superar $80.000.000");
     }
 
     if ($tasaInteres === false || $tasaInteres < 0 || $tasaInteres > 999.99) {
@@ -184,6 +184,18 @@ try {
     echo json_encode([
         "success" => false,
         "message" => "Error en la base de datos: " . $e->getMessage()
+    ]);
+} catch (LimitePrestamoException $e) {
+    http_response_code(409);
+    echo json_encode([
+        "success" => false,
+        "message" => $e->getMessage()
+    ]);
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "message" => $e->getMessage()
     ]);
 } catch (Exception $e) {
     echo json_encode([

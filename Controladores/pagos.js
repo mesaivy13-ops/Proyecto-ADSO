@@ -11,6 +11,8 @@ const panelFormularioPago = document.getElementById("panelFormularioPago");
 const resMonto = document.getElementById("resMonto");
 const resPagado = document.getElementById("resPagado");
 const resSaldo = document.getElementById("resSaldo");
+const resCuota = document.getElementById("resCuota");
+const resNumeroCuota = document.getElementById("resNumeroCuota");
 
 let prestamosData = [];
 let pagosData = [];
@@ -31,19 +33,21 @@ function actualizarResumen() {
     resMonto.textContent = formatoMoneda(0);
     resPagado.textContent = formatoMoneda(0);
     resSaldo.textContent = formatoMoneda(0);
-    valorCuotaInput.removeAttribute("max");
+    resCuota.textContent = formatoMoneda(0);
+    resNumeroCuota.textContent = "-";
+    valorCuotaInput.value = "";
     return;
   }
 
   resMonto.textContent = formatoMoneda(prestamo.montoPrestamo);
   resPagado.textContent = formatoMoneda(prestamo.totalPagado);
   resSaldo.textContent = formatoMoneda(prestamo.saldoPendiente);
-
-  if (prestamo.saldoPendiente > 0) {
-    valorCuotaInput.max = prestamo.saldoPendiente;
-  } else {
-    valorCuotaInput.max = 0;
-  }
+  resCuota.textContent = formatoMoneda(prestamo.valorCuotaEsperada);
+  resNumeroCuota.textContent = prestamo.cuotasPagadas + 1;
+  valorCuotaInput.value = prestamo.valorCuotaEsperada > 0
+    ? Number(prestamo.valorCuotaEsperada).toFixed(2)
+    : "";
+  valorCuotaInput.max = prestamo.valorCuotaEsperada;
 }
 
 function renderPrestamos() {
@@ -58,7 +62,7 @@ function renderPrestamos() {
   prestamosData.forEach((p) => {
     const opt = document.createElement("option");
     opt.value = p.idPrestamo;
-    const puedePagar = p.estado === "Aprobado" && p.saldoPendiente > 0;
+    const puedePagar = p.estado === "Aprobado" && p.valorCuotaEsperada > 0;
     opt.textContent = `#${p.idPrestamo} - ${p.nombreAsociado} (${p.estado}, saldo: ${formatoMoneda(p.saldoPendiente)})`;
     opt.disabled = !puedePagar;
     selectPrestamo.appendChild(opt);
